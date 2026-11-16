@@ -1,5 +1,5 @@
 {
-  "recorded_at": "2026-11-16T19:49:19+0500",
+  "recorded_at": "2026-11-16T20:00:25+0500",
   "host": {
     "os": "Windows-10-10.0.26200-SP0",
     "machine": "AMD64",
@@ -25,6 +25,6 @@
   },
   "metrics_server": "v0.7.2",
   "locust": "locust 2.32.4 from /opt/venv/lib/python3.11/site-packages/locust (Python 3.11.10)",
-  "app_image_id": "sha256:29eb7c7d47b1944df7ce8ee276a94f839074d85ad748f0d234cc027bd89e4808",
-  "git_commit": "cac4d40b6fa060c07b991d2847193c82a8915dc5"
+  "app_image_id": "sha256:a7eae9022fc54ea825a7f404a552d1ba699fec563f68c87f47f7e5f9072840ec",
+  "git_commit": "f831c359fbcc49d8ab8177c280afda4188952f3a"
 }

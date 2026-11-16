@@ -1,0 +1,30 @@
+{
+  "run_id": "fixed__steady__r3",
+  "config": "fixed",
+  "workload": "steady",
+  "rep": 3,
+  "order": 2,
+  "initial_replicas": 4,
+  "hpa_manifest": null,
+  "host_start": 1794841968.0370872,
+  "host_end": 1794842572.3487463,
+  "docker_minus_host_s": 0.03207707405090332,
+  "locust_exit_code": 0,
+  "collector_errors": 0,
+  "max_sampling_gap_s": 5.013000011444092,
+  "on_mains_power_at_end": true,
+  "control_plane_restarts_before": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  },
+  "control_plane_restarts_after": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  }
+}

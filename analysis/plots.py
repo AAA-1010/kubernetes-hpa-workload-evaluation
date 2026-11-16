@@ -40,6 +40,13 @@ plt.rcParams.update({
 })
 
 
+def top_legend(fig, ax, ncol: int = 4) -> None:
+    """One legend above all panels, so it never covers data."""
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=ncol,
+               frameon=False, handlelength=2.6)
+
+
 def save(fig, name: str) -> None:
     FIG.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIG / f"{name}.pdf")
@@ -76,7 +83,8 @@ def fig_timeseries(ts: pd.DataFrame, column: str, ylabel: str, name: str, log: b
         if log:
             ax.set_yscale("log")
     axes[0].set_ylabel(ylabel)
-    axes[0].legend(frameon=False, loc="upper left")
+    fig.tight_layout()
+    top_legend(fig, axes[0])
     save(fig, name)
 
 
@@ -95,7 +103,8 @@ def fig_bars(summary: pd.DataFrame) -> None:
         ax.set_xticks(x, [w.capitalize() for w in WORKLOADS])
         ax.set_ylabel(label)
         ax.grid(axis="x", visible=False)
-    axes[0].legend(frameon=False, ncol=2, loc="upper left")
+    fig.tight_layout(w_pad=2.0)
+    top_legend(fig, axes[0])
     save(fig, "summary_bars")
 
 
@@ -109,12 +118,14 @@ def fig_tradeoff(runs: pd.DataFrame) -> None:
         ax.set_title(w.capitalize())
         ax.set_xlabel("Pod-seconds")
     axes[0].set_ylabel("SLA violations (%)")
-    axes[0].legend(frameon=False, loc="upper right")
+    fig.tight_layout()
+    top_legend(fig, axes[0])
     save(fig, "tradeoff")
 
 
 def fig_calibration() -> None:
-    path = PROC / "calibration.csv"
+    # Final pilot (docs/pilot.md, pilot v5)
+    path = REPO / "results" / "pilot" / "v5_rounds10000" / "calibration_summary.csv"
     if not path.exists():
         return
     cal = pd.read_csv(path)
@@ -127,6 +138,7 @@ def fig_calibration() -> None:
     axes[1].plot(cal["target_users"], cal["p95_ms"], color=INK, marker="o", markersize=3)
     axes[1].set_xlabel("Offered load (users ≈ req/s)")
     axes[1].set_ylabel("p95 latency (ms)")
+    fig.tight_layout(w_pad=2.0)
     save(fig, "calibration")
 
 

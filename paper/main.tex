@@ -36,7 +36,30 @@
 \begin{document}
 \maketitle
 
-%% ABSTRACT (written after the results are final)
+\begin{abstract}
+\noindent The Kubernetes Horizontal Pod Autoscaler (HPA) is the standard way to
+scale containerised web services, yet its CPU target and scaling behaviour are
+usually left at their defaults. This article measures how these settings affect
+latency, SLA compliance and provisioned capacity. A CPU-bound web service was
+run on a single-node Kubernetes cluster under four configurations (four fixed
+pods, the default HPA, a \emph{responsive} HPA with a 50\% target and fast
+scale-down, and a \emph{balanced} HPA with a 65\% target and moderate limits)
+and three workloads (steady, bursty and periodic), with three repetitions of
+each of the 12 combinations. In total, 36 runs of 600\,s served 1.31 million requests. Compared
+with fixed provisioning, every HPA configuration cut the share of requests that
+failed or exceeded 250\,ms by 62--71\% under steady and periodic load and by
+24--39\% under bursts, using 1.4--2.3 times the pod-seconds. Among the HPA
+configurations the balanced one gave the lowest tail latency under steady load
+at about the cost of the default; the responsive one used 25\% fewer
+pod-seconds than the default under bursts but produced 210 of the 220 failed
+requests, 218 of which occurred within 30\,s of a scale-down. Reaching full capacity after a burst began took 52--80\,s, so
+no reactive configuration absorbed 90\,s bursts well. All code, manifests, raw data and
+analysis scripts are available at
+\url{https://github.com/AAA-1010/kubernetes-hpa-workload-evaluation}.
+\end{abstract}
+
+\noindent\textbf{Keywords:} Kubernetes, Horizontal Pod Autoscaler, autoscaling,
+elasticity, performance evaluation, cloud computing.
 
 \section{Introduction}
 
@@ -219,8 +242,408 @@ other and against fixed provisioning across several workload shapes, with
 repeated runs and openly available code and raw data. This study fills that
 gap for a controlled, CPU-bound web service.
 
-%% METHOD, RESULTS, DISCUSSION, CONCLUSION follow once the data are final.
+\section{Experimental Methodology}
+\label{sec:method}
 
+The study is a controlled experiment with two factors, the scaling
+configuration (four levels) and the workload pattern (three levels), and three
+repetitions per combination, giving 36 runs. Everything else (hardware,
+software versions, application image, resource requests and run length) is
+held constant. All code, manifests and raw data are in the public repository
+cited in the abstract.
+
+\subsection{Testbed}
+All runs used one laptop with an Intel Core i5-10210U processor (4 cores,
+8 threads) and 16\,GB of memory, running Windows~11 and Docker Desktop 28.5.1
+on WSL2, which exposed 8 virtual CPUs and 7.7\,GiB of memory to containers.
+Kubernetes v1.37.0 ran as a single-node kind 0.33.0 cluster with
+Metrics Server v0.7.2. Following problems seen during piloting (Section~\ref{sec:pilot}),
+etcd kept its data on the node's in-memory file system, which kept the control
+plane responsive. The load generator, Locust 2.32.4, ran in its official
+container on the same Docker network as the cluster and was limited to one CPU.
+Runs were accepted only if the laptop stayed on mains power, the cluster
+samples had no gap longer than 20\,s, and no control-plane component
+(API server, etcd, scheduler, controller manager, Metrics Server) restarted
+during the run; otherwise the run was discarded and repeated. All 36 runs of
+the main experiment passed these checks at the first attempt (largest sampling
+gap 5.02\,s, no sampler errors), so none had to be repeated.
+
+\subsection{Application}
+The system under test is a small Python web service (Flask 3.0.3 served by
+Gunicorn 23.0.0 with two worker processes of four threads each). Its
+\texttt{/work} endpoint computes 10{,}000 chained SHA-256 hashes, so every
+request has the same, purely CPU-bound cost; the pilot measured about
+12.5\,ms of CPU time per request. Each pod requests 250 millicores and 128\,MiB
+and is limited to 500 millicores and 256\,MiB. A NodePort Service spreads
+connections over ready pods. The readiness probe checks \texttt{/healthz}
+every 2\,s with a 3\,s timeout. This choice is deliberate: with the 1\,s default,
+an overloaded pod failed its probe and was removed from the Service, which
+turned slow responses into refused connections.
+
+\subsection{Scaling configurations}
+Table~\ref{tab:configs} lists the four configurations. The three HPA
+configurations share the same replica bounds (2 to 10 pods) and differ only in
+the CPU target and the \texttt{behavior} settings, so that the comparison
+isolates the tuning parameters. \emph{Default} uses the target that
+Kubernetes applies when none is given (80\%) and the built-in behaviour.
+\emph{Responsive} lowers the target to 50\% to keep more headroom, allows the
+replica count to triple per 15\,s, and shortens the scale-down window from
+300\,s to 60\,s. \emph{Balanced} sits in between: a 65\% target, scale-up of at
+most two pods per 15\,s after a 15\,s stabilisation window, and a 120\,s
+scale-down window that removes at most one pod every 30\,s. \emph{Fixed} runs
+four pods without autoscaling, which is enough for the average demand of the
+workloads but not for their peaks.
+
+\begin{table}[t]
+\centering
+\caption{Scaling configurations. Scale-up and scale-down policies are per 15\,s
+unless stated otherwise; ``window'' is the stabilisation window.}
+\label{tab:configs}
+\small
+\begin{tabular}{lcccc}
+\toprule
+Configuration & CPU target & Pods (min/max) & Scale-up & Scale-down \\
+\midrule
+Fixed & -- & 4/4 & -- & -- \\
+Default & 80\% & 2/10 & max(100\%, 4 pods), no window & 100\%, 300\,s window \\
+Responsive & 50\% & 2/10 & max(200\%, 4 pods), no window & 50\%, 60\,s window \\
+Balanced & 65\% & 2/10 & 2 pods, 15\,s window & 1 pod per 30\,s, 120\,s window \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Workloads}
+Locust users each send at most one request per second, and every request opens
+a new TCP connection so that pods added during a run receive traffic
+immediately; with persistent connections, existing users would stay attached
+to the original pods. The number of users therefore approximates the offered
+request rate. Each run lasts 600\,s (Figure~\ref{fig:workloads}):
+\begin{itemize}
+  \item \textbf{Steady:} 70 users for the whole run.
+  \item \textbf{Bursty:} 20 users, jumping to 120 users for 90\,s at
+        $t=120$\,s and again at $t=390$\,s.
+  \item \textbf{Periodic:} a raised-cosine wave between 20 and 120 users with a
+        200\,s period (three cycles).
+\end{itemize}
+With the measured cost per request, 20, 70 and 120 requests per second
+correspond to about 0.25, 0.9 and 1.5 CPU cores of demand.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{workloads}
+\caption{Offered load (Locust users, about requests per second) for the three
+workload patterns.}
+\label{fig:workloads}
+\end{figure}
+
+\subsection{Procedure}
+Before every run the application namespace was deleted and re-created, the
+Deployment was started with its initial replica count (four for Fixed, two
+otherwise), and the run waited until all pods were ready, the Metrics API
+reported them and, for HPA configurations, the HPA had read its first CPU
+value, followed by a 30\,s settling period. The 36 runs were executed in a
+random order drawn with a fixed seed, so that slow drift of the laptop
+(temperature, background activity) is spread across configurations rather
+than aligned with one of them.
+
+\subsection{Measurements and metrics}
+Every request was logged individually with its start time, latency and
+outcome. Every 5\,s a sampler recorded the Deployment's desired and ready
+replicas, the HPA's desired replicas and observed CPU utilisation, the number
+of pods holding resources, and per-pod CPU and memory from the Metrics API.
+From these raw data the analysis computes, per run: mean, median, 95th and
+99th percentile latency of successful requests; throughput; failure rate; the
+\emph{SLA violation rate}, the share of requests that failed or took longer
+than 250\,ms; the average and maximum number of ready pods;
+\emph{pod-seconds}, the time integral of pods holding resources, as a measure
+of provisioned capacity; the number of scaling actions (changes of the desired
+replica count); the \emph{scale-up delay}, the time from each load increase
+(the start of the run for Steady, the start of each burst, the start of each
+period) to the first increase of the desired replica count, averaged over the
+increases in a run; and mean CPU utilisation relative to the request. A load
+increase after which the replica count did not rise, because the pods added
+earlier were still running, has no delay and is left out of that average.
+Results are reported as the mean and standard deviation over the three
+repetitions. With only three runs per combination we do not apply formal
+significance tests; we call a difference \emph{clear} only when the ranges of
+the three runs do not overlap, and give those ranges in square brackets.
+
+\subsection{Pilot study and calibration}
+\label{sec:pilot}
+The SLA threshold and load levels were fixed from pilot runs before the main
+experiment, as planned in the proposal; all pilots and their raw data are
+documented in the repository. In the final pilot a single pod was exposed to
+offered loads rising from 5 to 40 requests per second in 60\,s steps. Up to
+15 requests per second the 95th-percentile latency stayed between 111 and
+123\,ms; it reached 219\,ms at 20 and 273\,ms at 25 requests per second, and
+the pod saturated at 33 to 38 requests per second with a p95 above 1.3\,s.
+We therefore set the SLA threshold to 250\,ms, about twice the unloaded p95.
+Earlier pilots were rejected because the request was too expensive, because
+the default probe timeout removed overloaded pods from service, or because the
+laptop lost mains power and went to sleep during the run; these experiences
+led to the validity checks described above.
+
+\section{Results}
+\label{sec:results}
+
+The 36 runs served 1{,}308{,}180 requests, of which 220 failed.
+Table~\ref{tab:results} summarises every combination,
+Figure~\ref{fig:replicas} shows how many pods were ready over time,
+Figure~\ref{fig:p95} shows the 95th-percentile latency over time, and
+Figure~\ref{fig:tradeoff} plots each run's SLA violation rate against the
+capacity it used. Two observations apply to all workloads. First, the pods
+used more CPU per request than in the single-pod pilot: dividing the average
+pod CPU by the throughput gives 17 to 22\,ms per request instead of 12.5\,ms,
+so the steady load of 70 requests per second needed about 1.2 cores, nearly
+five pods' worth of requested CPU, rather than the 0.9 cores planned. Second,
+memory stayed at 58\,MiB per pod in every run, so CPU was the only resource
+that mattered.
+
+\begin{table}[t]
+\centering
+\caption{Results per workload and configuration, mean $\pm$ standard deviation
+over three runs. Thr.: successful requests per second; p50/p95: latency
+percentiles of successful requests; SLA viol.: requests that failed or took
+longer than 250\,ms; Pod-s: pod-seconds over the 600\,s run; Actions: changes of
+the desired replica count; Up delay: time from a load increase to the first
+scale-up.}
+\label{tab:results}
+\resizebox{\textwidth}{!}{\input{tables/results.tex}}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{replicas}
+\caption{Ready pods over time, averaged over the three runs of each
+configuration (non-integer values mean that the runs differed).}
+\label{fig:replicas}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{p95_timeseries}
+\caption{95th-percentile latency in 10\,s windows, averaged over the three runs
+(logarithmic scale). The SLA threshold is 250\,ms.}
+\label{fig:p95}
+\end{figure}
+
+\subsection{Steady workload}
+With four fixed pods, the 95th-percentile latency was 650\,ms
+[474--770] and 15.0\% of requests violated the SLA [11.3--21.3]. Each pod used
+on average 114\% of its CPU request, so four pods were too few for this load.
+All three HPA configurations brought the violation rate below 6\%, and the
+time profile shows where their remaining violations came from. Each HPA run
+started with two pods, which were overloaded until new pods arrived: in the
+first 60\,s, 44--57\% of requests violated the SLA, while after 60\,s only
+0.3--0.8\% did, compared with 12.6\% for Fixed over the same period.
+
+Among the HPA configurations, both Balanced (4.4\% [4.0--4.7]) and Responsive
+(4.6\% [4.2--5.0]) had clearly fewer violations than Default
+(5.7\% [5.1--6.0]), and Balanced also had a clearly lower p95 than Default
+(193\,ms [151--228] versus 308\,ms [272--331]). The cost of these gains differed.
+Responsive, with its 50\% target, kept 9.3 pods on average and used the most
+capacity (5{,}599 pod-seconds). Balanced used 4{,}958 pod-seconds, about the
+same as Default's 4{,}887, whose runs varied more [4{,}288--5{,}579]. All three
+kept more pods than the average CPU demand alone would require
+(Figure~\ref{fig:replicas}): the start-up overload drove the replica count
+up, and the scale-down stabilisation window then kept it near that peak.
+Default, for example, ran at an average utilisation of 66\% of the request,
+well below its 80\% target.
+
+\subsection{Bursty workload}
+Bursts were the hardest case for every configuration: SLA violation rates
+ranged from 26.9\% (Responsive) to 44.2\% (Fixed), and almost all violations
+fell inside the two 90\,s bursts. Outside them no run exceeded 8.5\%, and the
+highest of these values occurred in the first 120\,s, while the HPA
+configurations still had only two pods. In the first burst all HPA configurations started
+from two pods. Responsive reached ten ready pods 52\,s after the burst began
+on average, against 75\,s for Balanced and 80\,s for Default, and it had the
+fewest violations in that burst (39.6\% versus 46.8\% and 57.9\%; Fixed
+62.2\%).
+
+The configurations then diverged in the 180\,s gap between bursts
+(Figure~\ref{fig:replicas}). Default's 300\,s scale-down window outlasted the
+gap, so it kept all ten pods and made no further scaling action. Balanced removed one pod every 30\,s after its 120\,s window and was
+down to eight pods when the second burst began. Responsive returned to two or
+three pods. In the second burst, Responsive again scaled up within 28\,s and
+had 38.2\% violations, compared with 41.1\% for Default, 47.0\% for Balanced
+and 68.6\% for Fixed. Over the whole run, Responsive used 3{,}461
+pod-seconds, 25\% fewer than Default (4{,}628), and had the lowest mean
+violation rate, but also the largest spread between runs [19.4--33.5], ten
+scaling actions per run and 0.10\% failed requests. The p95 latencies of all
+four configurations lay between 1.7 and 2.1\,s with overlapping ranges.
+
+Default's second burst also shows a limit of the testbed. With ten ready pods
+throughout, all 120 requests per second were served and each pod used only
+220--226 millicores, less than half of its 500-millicore limit, yet the median
+latency in that burst was 95--205\,ms and the p95 560--790\,ms. At this load
+the bottleneck was therefore outside the pods' CPU allocation, in resources
+shared on the laptop (Section~\ref{sec:threats}).
+
+\subsection{Periodic workload}
+Fixed again had the most violations (38.8\%) and the highest p95 (1{,}513\,ms).
+The three HPA configurations reduced violations to 11.2--15.4\%, with
+overlapping ranges, but they behaved differently over the three cycles. In the
+first cycle the load rises gradually from 20 requests per second, so a lower
+target reacts earlier: the scale-up delay was 58\,s for Default, 43\,s for
+Balanced and 28--43\,s for Responsive, and Responsive had the fewest
+first-cycle violations (17.9\%, against 22.7\% for Balanced and 29.4\% for
+Default). Afterwards, Default kept ten pods through every trough and Balanced
+dropped by at most one pod, so in the second and third cycles both stayed at
+5--11\% violations. Responsive scaled down to about four pods in each trough
+and scaled up again in each peak (12 scaling actions per run), which saved 6\%
+of pod-seconds relative to Default (5{,}035 versus 5{,}355) but left it at
+about 14\% violations per cycle and caused 0.08\% failed requests.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{tradeoff}
+\caption{SLA violation rate against provisioned capacity (pod-seconds) for
+each of the 36 runs. Points further down and to the left are better.}
+\label{fig:tradeoff}
+\end{figure}
+
+\subsection{Scaling delay}
+The measured scale-up delays fell into narrow groups at about 13, 28, 43 and
+58\,s across all workloads (for example, 27.9--28.5\,s in eight of the nine
+steady HPA runs). The groups are 15\,s apart, the HPA's synchronisation period: the
+controller reacts only at its next evaluation after the CPU average has risen
+above the target, and each further evaluation below that threshold adds 15\,s.
+The time from a scale-up decision to the new pod being ready was always within
+one 5\,s sampling interval, partly because the image was already on the
+node. In this setup the decision loop, not pod
+start-up, set the reaction time.
+
+\subsection{Failed requests and scale-down}
+\label{sec:failures}
+Failures were rare (220 of 1.31 million requests) but not random. They
+occurred in 12 runs, all of which contained at least one scale-down, and none
+occurred in the 20 runs without a scale-down. Responsive accounted for 210 of
+them and Balanced for 10. The errors were connection-level: refused or reset
+connections, connection time-outs, and connections closed without a response.
+As a check made after the experiment (\texttt{analysis/failures.py}), we
+compared the start time of every failed request with the scale-down events of
+its run. 218 of the 220 failures (99.1\%) started between 5\,s before and 30\,s
+after a scale-down, whereas a failure placed at random in its run would fall
+inside these windows with a probability of only 19\%. Failures therefore come from removing pods, not from
+overload: requests were still sent to pods that were being shut down.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\paragraph{Answer to the research question.}
+Against fixed provisioning sized for the average load, every HPA
+configuration lowered the SLA violation rate substantially: by 62--71\% under
+steady load, 60--71\% under periodic load and 24--39\% under bursts. It paid for
+this with 1.4 to 2.3 times the pod-seconds (Figure~\ref{fig:tradeoff}). Among
+the HPA configurations the workload shape decided which setting mattered. Under
+steady load the CPU target mattered most: a lower target bought lower tail
+latency, and the balanced 65\% target achieved it at no extra cost over the
+default. Under bursty and periodic load the scale-down behaviour mattered most.
+A long scale-down window kept capacity through the quiet phases and cost
+pod-seconds. A short window saved capacity (25\% under bursts, 6\% under the
+periodic load) but added scaling actions, more variable results and failed
+requests. The default 300\,s window acted like a cache of past peaks, which is
+helpful when peaks recur within five minutes, as in our periodic and bursty
+workloads, and wasteful when they do not.
+
+\paragraph{Reactive scaling and short bursts.}
+No configuration handled the bursts well. Even Responsive, the fastest, needed
+about 52\,s to reach full capacity, more than half of a 90\,s burst, and the
+measured delays show that the 15\,s control loop, not pod start-up, set this
+pace. This agrees with the argument that purely reactive autoscalers lag
+behind sudden load changes, which motivates predictive and hybrid
+approaches~\cite{bauer2019chameleon,calheiros2015workload,dangquang2021deep,imdoukh2020machine}.
+Within the built-in HPA, raising \texttt{minReplicas} to cover the expected
+burst, or keeping capacity through gaps with a long scale-down window, is the
+practical alternative; the latter is what made Default's second burst cheaper in
+violations than its first.
+
+\paragraph{Scale-down needs graceful termination.}
+The link between scale-down and failures is a practical finding: fast
+scale-down is safe only if the application drains connections before it stops.
+Our deployment, like many simple ones, had no pre-stop delay and a 5\,s grace
+period, so the Service could still route new connections to a pod that was
+already shutting down. A pre-stop delay, so that the pod is removed from the
+Service before the server stops, is the usual remedy. We did not test it,
+and it is the first follow-up experiment we would run.
+
+\paragraph{Recommendations.}
+Under the conditions studied here: (i)~for steady traffic, use a moderate CPU
+target (around 65\%) with moderate scale-up limits, as in Balanced; (ii)~for
+traffic whose peaks recur within a few minutes, keep a long scale-down window,
+since scaling down between peaks saves little and adds failures; (iii)~for
+irregular bursts where capacity cost matters, a responsive policy saves
+pod-seconds but should be combined with graceful termination; and (iv)~set
+\texttt{minReplicas} high enough for the expected base load, because most of
+the violations of the HPA configurations under steady load came from the first
+60\,s, when only two pods were running. These recommendations agree with studies that tune the
+utilisation threshold or replica bounds from
+data~\cite{pozdniakova2024slaadaptive,augustyn2024tuning}, and they show that
+scaling behaviour deserves the same attention as the target.
+
+\subsection{Threats to validity}
+\label{sec:threats}
+
+\paragraph{Internal validity.}
+The cluster, the load generator and the operating system shared one 4-core
+laptop. At 120 requests per second the latency grew even though the pods were
+far from their CPU limits, which points to contention outside the pods, in
+host CPU, container networking or the load generator, none of which we
+instrumented. This affects all configurations at peak load and therefore
+mostly the absolute latency values. The load generator, limited to one CPU,
+reported CPU usage above 90\% once, near the last peak of one Default periodic
+run. That run had Default's highest periodic violation rate (21.0\%), and
+without it the Default mean would fall from 14.8\% to 11.7\%. We kept the run
+because load-generator CPU was not one of the validity criteria fixed in
+advance. Locust users also wait for each response before sending the next
+request, so when responses take longer than a second the offered load falls,
+as it did for Fixed in the bursts (93--99 instead of 120 requests per
+second in the second burst). Latency under overload is therefore
+underestimated, and more so for the configurations that were overloaded
+longest. Run order was randomised to spread slow drift of the laptop across
+configurations.
+
+\paragraph{Construct validity.}
+The SLA threshold (250\,ms) was fixed from the pilot before the main runs, but
+other thresholds would change the violation rates. Pod-seconds measure
+requested capacity, not money: in a real cloud the cost depends on how many
+nodes a cluster autoscaler adds. The scale-up delay is defined only when the
+replica count could still rise, so for the periodic workload it describes the
+first cycle only.
+
+\paragraph{External validity.}
+The service is synthetic and purely CPU-bound, the cluster has a single node,
+and each run lasts ten minutes; services that are memory- or I/O-bound, take
+longer to start or run on many nodes may behave differently. The three HPA
+configurations are three points in a large parameter space, chosen to vary
+the target and the behaviour together, so the study cannot separate the effect
+of each parameter. Finally, three repetitions per combination reveal large
+effects but not small ones, which is why we report ranges and avoid claiming
+differences whose ranges overlap.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+We measured four scaling configurations of a CPU-bound web service on
+Kubernetes under steady, bursty and periodic load in 36 controlled and
+repeated runs. Any HPA configuration clearly outperformed four fixed pods in
+SLA compliance at roughly twice the provisioned capacity. Among the HPA
+configurations, a 65\% target with moderate limits gave the best steady-state
+latency at the cost of the default, a long scale-down window protected
+recurring peaks at a capacity cost, and a fast scale-down saved capacity but
+was the main source of failed requests, because pods were removed while still
+receiving connections. Reaching full capacity in a sudden burst took at least 50\,s,
+paced by the HPA's 15\,s control loop rather than pod start-up, so short bursts remain a
+weak point of reactive scaling. Future work should test graceful termination
+together with fast scale-down, vary the target and the behaviour settings one
+at a time, use an open-loop load generator on separate hardware, and repeat
+the study on a multi-node cluster with node autoscaling and with proactive
+autoscalers. All scripts and raw data are public so that these results can be
+checked and extended.
+
+\renewcommand{\bibfont}{\small}
+\setlength{\bibsep}{2pt plus 1pt}
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 

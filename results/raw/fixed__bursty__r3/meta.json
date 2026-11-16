@@ -1,0 +1,30 @@
+{
+  "run_id": "fixed__bursty__r3",
+  "config": "fixed",
+  "workload": "bursty",
+  "rep": 3,
+  "order": 14,
+  "initial_replicas": 4,
+  "hpa_manifest": null,
+  "host_start": 1794850142.042748,
+  "host_end": 1794850745.2301297,
+  "docker_minus_host_s": 0.00816655158996582,
+  "locust_exit_code": 0,
+  "collector_errors": 0,
+  "max_sampling_gap_s": 5.014000177383423,
+  "on_mains_power_at_end": true,
+  "control_plane_restarts_before": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  },
+  "control_plane_restarts_after": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  }
+}

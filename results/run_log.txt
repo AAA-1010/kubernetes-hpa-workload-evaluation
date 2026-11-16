@@ -1,0 +1,110 @@
+[20:00:38] 36 runs planned, roughly 7.2 h in total
+[20:00:38] run 1: fixed__steady__r2 - resetting environment (4 pods)
+[20:01:32] run 1: fixed__steady__r2 - load running for 600 s
+[20:11:47] run 1: fixed__steady__r2 - done
+[20:11:47] run 2: fixed__steady__r3 - resetting environment (4 pods)
+[20:12:48] run 2: fixed__steady__r3 - load running for 600 s
+[20:23:02] run 2: fixed__steady__r3 - done
+[20:23:02] run 3: responsive__steady__r2 - resetting environment (2 pods)
+[20:24:02] run 3: responsive__steady__r2 - load running for 600 s
+[20:34:15] run 3: responsive__steady__r2 - done
+[20:34:15] run 4: default__periodic__r3 - resetting environment (2 pods)
+[20:35:18] run 4: default__periodic__r3 - load running for 600 s
+[20:45:33] run 4: default__periodic__r3 - done
+[20:45:33] run 5: default__steady__r2 - resetting environment (2 pods)
+[20:46:49] run 5: default__steady__r2 - load running for 600 s
+[20:57:02] run 5: default__steady__r2 - done
+[20:57:02] run 6: default__periodic__r1 - resetting environment (2 pods)
+[20:58:19] run 6: default__periodic__r1 - load running for 600 s
+[21:08:32] run 6: default__periodic__r1 - done
+[21:08:32] run 7: default__steady__r1 - resetting environment (2 pods)
+[21:09:48] run 7: default__steady__r1 - load running for 600 s
+[21:20:01] run 7: default__steady__r1 - done
+[21:20:01] run 8: default__bursty__r1 - resetting environment (2 pods)
+[21:21:19] run 8: default__bursty__r1 - load running for 600 s
+[21:31:32] run 8: default__bursty__r1 - done
+[21:31:32] run 9: balanced__steady__r1 - resetting environment (2 pods)
+[21:32:48] run 9: balanced__steady__r1 - load running for 600 s
+[21:43:01] run 9: balanced__steady__r1 - done
+[21:43:01] run 10: fixed__bursty__r1 - resetting environment (4 pods)
+[21:44:02] run 10: fixed__bursty__r1 - load running for 600 s
+[21:54:15] run 10: fixed__bursty__r1 - done
+[21:54:15] run 11: balanced__periodic__r1 - resetting environment (2 pods)
+[21:55:18] run 11: balanced__periodic__r1 - load running for 600 s
+[22:05:31] run 11: balanced__periodic__r1 - done
+[22:05:31] run 12: fixed__bursty__r2 - resetting environment (4 pods)
+[22:06:32] run 12: fixed__bursty__r2 - load running for 600 s
+[22:16:45] run 12: fixed__bursty__r2 - done
+[22:16:45] run 13: default__bursty__r3 - resetting environment (2 pods)
+[22:17:48] run 13: default__bursty__r3 - load running for 600 s
+[22:28:02] run 13: default__bursty__r3 - done
+[22:28:02] run 14: fixed__bursty__r3 - resetting environment (4 pods)
+[22:29:02] run 14: fixed__bursty__r3 - load running for 600 s
+[22:39:15] run 14: fixed__bursty__r3 - done
+[22:39:15] run 15: fixed__periodic__r3 - resetting environment (4 pods)
+[22:40:16] run 15: fixed__periodic__r3 - load running for 600 s
+[22:50:29] run 15: fixed__periodic__r3 - done
+[22:50:29] run 16: balanced__periodic__r2 - resetting environment (2 pods)
+[22:51:31] run 16: balanced__periodic__r2 - load running for 600 s
+[23:01:45] run 16: balanced__periodic__r2 - done
+[23:01:45] run 17: balanced__bursty__r3 - resetting environment (2 pods)
+[23:03:03] run 17: balanced__bursty__r3 - load running for 600 s
+[23:13:16] run 17: balanced__bursty__r3 - done
+[23:13:16] run 18: fixed__periodic__r2 - resetting environment (4 pods)
+[23:14:17] run 18: fixed__periodic__r2 - load running for 600 s
+[23:24:31] run 18: fixed__periodic__r2 - done
+[23:24:31] run 19: responsive__periodic__r3 - resetting environment (2 pods)
+[23:25:32] run 19: responsive__periodic__r3 - load running for 600 s
+[23:35:46] run 19: responsive__periodic__r3 - done
+[23:35:46] run 20: default__steady__r3 - resetting environment (2 pods)
+[23:36:49] run 20: default__steady__r3 - load running for 600 s
+[23:47:03] run 20: default__steady__r3 - done
+[23:47:03] run 21: balanced__bursty__r1 - resetting environment (2 pods)
+[23:48:18] run 21: balanced__bursty__r1 - load running for 600 s
+[23:58:31] run 21: balanced__bursty__r1 - done
+[23:58:31] run 22: balanced__bursty__r2 - resetting environment (2 pods)
+[23:59:32] run 22: balanced__bursty__r2 - load running for 600 s
+[00:09:46] run 22: balanced__bursty__r2 - done
+[00:09:46] run 23: responsive__bursty__r3 - resetting environment (2 pods)
+[00:11:01] run 23: responsive__bursty__r3 - load running for 600 s
+[00:21:15] run 23: responsive__bursty__r3 - done
+[00:21:15] run 24: balanced__steady__r2 - resetting environment (2 pods)
+[00:22:16] run 24: balanced__steady__r2 - load running for 600 s
+[00:32:29] run 24: balanced__steady__r2 - done
+[00:32:29] run 25: responsive__periodic__r1 - resetting environment (2 pods)
+[00:33:31] run 25: responsive__periodic__r1 - load running for 600 s
+[00:43:46] run 25: responsive__periodic__r1 - done
+[00:43:46] run 26: balanced__steady__r3 - resetting environment (2 pods)
+[00:45:02] run 26: balanced__steady__r3 - load running for 600 s
+[00:55:15] run 26: balanced__steady__r3 - done
+[00:55:15] run 27: responsive__bursty__r2 - resetting environment (2 pods)
+[00:56:33] run 27: responsive__bursty__r2 - load running for 600 s
+[01:06:46] run 27: responsive__bursty__r2 - done
+[01:06:46] run 28: fixed__periodic__r1 - resetting environment (4 pods)
+[01:07:46] run 28: fixed__periodic__r1 - load running for 600 s
+[01:18:00] run 28: fixed__periodic__r1 - done
+[01:18:00] run 29: default__periodic__r2 - resetting environment (2 pods)
+[01:19:02] run 29: default__periodic__r2 - load running for 600 s
+[01:29:16] run 29: default__periodic__r2 - done
+[01:29:16] run 30: fixed__steady__r1 - resetting environment (4 pods)
+[01:30:17] run 30: fixed__steady__r1 - load running for 600 s
+[01:40:31] run 30: fixed__steady__r1 - done
+[01:40:31] run 31: responsive__steady__r1 - resetting environment (2 pods)
+[01:41:33] run 31: responsive__steady__r1 - load running for 600 s
+[01:51:47] run 31: responsive__steady__r1 - done
+[01:51:47] run 32: responsive__steady__r3 - resetting environment (2 pods)
+[01:53:03] run 32: responsive__steady__r3 - load running for 600 s
+[02:03:16] run 32: responsive__steady__r3 - done
+[02:03:16] run 33: responsive__bursty__r1 - resetting environment (2 pods)
+[02:04:16] run 33: responsive__bursty__r1 - load running for 600 s
+[02:14:28] run 33: responsive__bursty__r1 - done
+[02:14:28] run 34: responsive__periodic__r2 - resetting environment (2 pods)
+[02:15:31] run 34: responsive__periodic__r2 - load running for 600 s
+[02:25:44] run 34: responsive__periodic__r2 - done
+[02:25:44] run 35: balanced__periodic__r3 - resetting environment (2 pods)
+[02:26:48] run 35: balanced__periodic__r3 - load running for 600 s
+[02:37:01] run 35: balanced__periodic__r3 - done
+[02:37:01] run 36: default__bursty__r2 - resetting environment (2 pods)
+[02:38:19] run 36: default__bursty__r2 - load running for 600 s
+[02:48:31] run 36: default__bursty__r2 - done
+[02:48:31] all runs complete

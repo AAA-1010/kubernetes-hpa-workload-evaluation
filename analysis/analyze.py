@@ -153,23 +153,26 @@ def fmt(mean: float, std: float, digits: int = 1) -> str:
 
 
 def write_tables(summary: pd.DataFrame) -> None:
+    """One compact table: rows are workload x configuration, cells are mean +- std over runs."""
     TABLES.mkdir(parents=True, exist_ok=True)
     columns = [
-        ("lat_p95_ms", "p95 (ms)", 0), ("lat_mean_ms", "Mean (ms)", 0),
-        ("sla_violation_pct", "SLA viol. (\\%)", 1), ("failure_pct", "Fail (\\%)", 2),
-        ("throughput_rps", "Thr. (req/s)", 1), ("pods_ready_mean", "Avg pods", 2),
-        ("pods_ready_max", "Max pods", 1), ("pod_seconds", "Pod-s", 0),
-        ("scaling_actions", "Actions", 1), ("scale_up_delay_s", "Up delay (s)", 1),
+        ("throughput_rps", "Thr.\\ (req/s)", 1), ("lat_p50_ms", "p50 (ms)", 0),
+        ("lat_p95_ms", "p95 (ms)", 0), ("sla_violation_pct", "SLA viol.\\ (\\%)", 1),
+        ("failure_pct", "Fail (\\%)", 2), ("pods_ready_mean", "Avg pods", 1),
+        ("pod_seconds", "Pod-s", 0), ("scaling_actions", "Actions", 1),
+        ("scale_up_delay_s", "Up delay (s)", 1),
     ]
+    lines = ["\\begin{tabular}{ll" + "r" * len(columns) + "}", "\\toprule",
+             "Workload & Config & " + " & ".join(c[1] for c in columns) + " \\\\"]
     for workload in WORKLOAD_ORDER:
         sub = summary[summary["workload"] == workload].set_index("config").reindex(CONFIG_ORDER)
-        lines = ["\\begin{tabular}{l" + "r" * len(columns) + "}", "\\toprule",
-                 "Config & " + " & ".join(c[1] for c in columns) + " \\\\", "\\midrule"]
-        for config, row in sub.iterrows():
+        lines.append("\\midrule")
+        for i, (config, row) in enumerate(sub.iterrows()):
             cells = [fmt(row[f"{c}_mean"], row[f"{c}_std"], d) for c, _, d in columns]
-            lines.append(f"{config.capitalize()} & " + " & ".join(cells) + " \\\\")
-        lines += ["\\bottomrule", "\\end{tabular}"]
-        (TABLES / f"results_{workload}.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
+            label = workload.capitalize() if i == 0 else ""
+            lines.append(f"{label} & {config.capitalize()} & " + " & ".join(cells) + " \\\\")
+    lines += ["\\bottomrule", "\\end{tabular}"]
+    (TABLES / "results.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def main() -> None:

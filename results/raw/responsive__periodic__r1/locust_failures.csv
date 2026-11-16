@@ -1,0 +1,5 @@
+Method,Name,Error,Occurrences
+GET,/work,"ConnectionResetError(104, 'Connection reset by peer')",8
+GET,/work,"ConnectTimeoutError(<urllib3.connection.HTTPConnection object at 0x....>, 'Connection to hpa-exp-control-plane timed out. (connect timeout=10)')",12
+GET,/work,"ConnectionRefusedError(111, 'Connection refused')",24
+GET,/work,RemoteDisconnected('Remote end closed connection without response'),1

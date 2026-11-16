@@ -1,0 +1,30 @@
+{
+  "run_id": "balanced__steady__r1",
+  "config": "balanced",
+  "workload": "steady",
+  "rep": 1,
+  "order": 9,
+  "initial_replicas": 2,
+  "hpa_manifest": "k8s/hpa/balanced.yaml",
+  "host_start": 1794846768.026849,
+  "host_end": 1794847371.2734125,
+  "docker_minus_host_s": 0.0047454833984375,
+  "locust_exit_code": 0,
+  "collector_errors": 0,
+  "max_sampling_gap_s": 5.014999866485596,
+  "on_mains_power_at_end": true,
+  "control_plane_restarts_before": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  },
+  "control_plane_restarts_after": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  }
+}
