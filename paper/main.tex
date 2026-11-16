@@ -1,0 +1,227 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext,newtxmath}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+
+\graphicspath{{figures/}}
+
+\title{\textbf{Experimental Sensitivity Analysis of Kubernetes Horizontal Pod Autoscaler Configurations under Steady, Bursty, and Periodic Web Workloads}}
+
+\author{
+  Basim Kafeel\\
+  \small 22I-0775 --- \texttt{i220775@nu.edu.pk}\\
+  \small Primary Researcher
+  \and
+  Ali Aamir Ashraf\\
+  \small 22I-1199 --- \texttt{i221199@nu.edu.pk}\\
+  \small Co-Researcher
+  \\[1ex]
+  \small Department of Computer Science, FAST-NUCES Islamabad\\
+  \small BS Computer Science, Section CS-B, Group G01
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+%% ABSTRACT (written after the results are final)
+
+\section{Introduction}
+
+Web applications rarely receive a constant amount of traffic. Demand can stay
+roughly level, jump sharply for a short time, or rise and fall in a regular
+cycle. Provisioning for the peak wastes capacity for most of the day, while
+provisioning for the average lets response times grow when demand rises.
+Elasticity, the ability to add and remove resources as demand changes, is
+therefore one of the main reasons for running web services in the
+cloud~\cite{aldhuraibi2018elasticity,qu2019autoscaling}. Deciding \emph{when}
+and \emph{how much} to scale is the job of an autoscaler, and decades of work
+have produced rule-based, queueing-based, control-theoretic, time-series and
+learning-based
+approaches~\cite{loridobotran2014a,qu2019autoscaling,chen2019a,gari2021reinforcement}.
+
+Containers and container orchestration have made autoscaling a standard
+platform feature rather than custom
+infrastructure~\cite{bernstein2014containers,pahl2019cloud,burns2016borg}.
+Kubernetes, now the dominant orchestrator~\cite{truyen2019a,carrion2023kubernetes},
+ships a Horizontal Pod Autoscaler (HPA) that periodically compares an observed
+metric, most often CPU utilisation, with a target and changes the number of
+pod replicas accordingly~\cite{nguyen2020horizontal}. The HPA is a closed
+feedback loop that monitors the application, decides on a replica count and
+acts on it, which places it in the area of autonomic and self-adaptive
+systems~\cite{kephart2003the,salehie2009selfadaptive}.
+
+Although many studies propose new autoscalers that replace or extend the
+HPA~\cite{dangquang2021deep,imdoukh2020machine,toka2021machine,phuc2022trafficaware,abdelkhaleq2023intelligent},
+the standard HPA remains the most widely used option because it is built in
+and easy to operate~\cite{pozdniakova2024slaadaptive}. Its behaviour, however,
+depends on several parameters: the utilisation target, the replica bounds, and
+since the \texttt{autoscaling/v2} API, scale-up and scale-down policies and
+stabilisation windows. These parameters are usually left at their defaults or
+set by trial and error. Evaluations of autoscalers have also been criticised
+for testing a single scenario and comparing only against static
+provisioning~\cite{ilyushkin2018an,papadopoulos2016peas}.
+
+This article asks a practical question: \emph{how do different Kubernetes HPA
+configurations affect application performance, SLA compliance and resource
+efficiency under steady, bursty and periodic web workloads?} We answer it with
+a controlled, repeated experiment on a local Kubernetes cluster. The same
+CPU-bound web service is run under four configurations (fixed provisioning,
+the default HPA, a responsive HPA and a balanced HPA) and three workload
+patterns, with three repetitions of each combination. The contributions are:
+\begin{itemize}
+  \item a fully scripted and reproducible experimental setup (application,
+        manifests, load generator, runner and analysis) published as open
+        source;
+  \item a measurement of how the HPA's target and \texttt{behavior} settings
+        trade latency, SLA violations and scaling activity against
+        provisioned capacity (pod-seconds) for three workload shapes; and
+  \item practical recommendations, grounded in the measured data, for choosing
+        an HPA configuration for a given traffic pattern.
+\end{itemize}
+
+The rest of the article is organised as follows. Section~\ref{sec:background}
+explains how the HPA works. Section~\ref{sec:related} reviews related work.
+Section~\ref{sec:method} describes the experimental design.
+Section~\ref{sec:results} presents the results, Section~\ref{sec:discussion}
+discusses them together with threats to validity, and
+Section~\ref{sec:conclusion} concludes.
+
+\section{Background: the Kubernetes Horizontal Pod Autoscaler}
+\label{sec:background}
+
+A Kubernetes \emph{Deployment} keeps a requested number of identical pods
+running, and a \emph{Service} spreads incoming connections over the pods that
+are ready. The HPA controller adjusts the Deployment's replica count. Every
+synchronisation period (15\,s by default) it reads the current metric for the
+target pods from the Metrics API, which the Metrics Server fills by scraping
+the kubelets, and computes
+\begin{equation}
+  \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times
+  \frac{\text{currentMetricValue}}{\text{targetMetricValue}} \right\rceil .
+  \label{eq:hpa}
+\end{equation}
+For CPU, the metric is average utilisation expressed as a percentage of each
+pod's CPU \emph{request}, so a pod that requests 250 millicores and uses
+200 millicores is at 80\%. Changes are skipped when the ratio is within a
+tolerance of 10\%, and the result is clamped to the configured
+\texttt{minReplicas} and \texttt{maxReplicas}~\cite{nguyen2020horizontal}.
+
+The \texttt{autoscaling/v2} API adds a \texttt{behavior} section with separate
+rules for scaling up and down. Each direction has \emph{policies} that cap the
+change per period (for example, at most four pods or 100\% of the current
+count per 15\,s), a \texttt{selectPolicy} that picks the most or least
+permissive policy, and a \emph{stabilisation window}. During a window the
+controller uses the most conservative recommendation it has computed, the
+highest for scale-down and the lowest for scale-up, which damps
+oscillation. When no behaviour is given, the defaults are: scale-up with no
+window and up to the larger of 100\% or four pods per 15\,s; scale-down with a
+300\,s window and up to 100\% per 15\,s.\footnote{Kubernetes documentation,
+``Horizontal Pod Autoscaling'',
+\url{https://kubernetes.io/docs/concepts/workloads/autoscaling/horizontal-pod-autoscale/}.}
+Because new pods need time to start, pass readiness checks and appear in the
+Metrics API, the effective reaction time of the loop is longer than the
+synchronisation period. Recent work analyses the stability of this control
+loop formally~\cite{serracanta2025on}.
+
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Autoscaling surveys.}
+Lorido-Botran et al.\ classify cloud autoscaling techniques into threshold
+rules, reinforcement learning, queueing theory, control theory and time-series
+analysis~\cite{loridobotran2014a}. Qu et al.\ survey autoscaling specifically
+for web applications and organise the problem along monitoring, analysis,
+planning and execution~\cite{qu2019autoscaling}. Al-Dhuraibi et al.\ review
+elasticity in cloud computing, including container
+elasticity~\cite{aldhuraibi2018elasticity}, and Chen et al.\ frame autoscalers
+as self-aware and self-adaptive systems~\cite{chen2019a}. More recent surveys
+cover autoscaling of containers in cloud and edge/fog
+settings~\cite{dogani2023autoscaling}, reinforcement-learning
+autoscalers~\cite{gari2021reinforcement} and machine-learning-based container
+orchestration~\cite{zhong2022machine}. Container technologies and orchestrators
+themselves are reviewed in~\cite{pahl2019cloud,truyen2019a}, and Kubernetes
+scheduling in~\cite{carrion2023kubernetes,senjab2023a}.
+
+\paragraph{Classic dynamic provisioning.}
+Before containers, dynamic provisioning of multi-tier Internet applications
+combined queueing models with predictive and reactive
+control~\cite{urgaonkar2008agile}, and AutoScale showed that capacity can be
+added and removed robustly under unpredictable load while meeting
+response-time targets~\cite{gandhi2012autoscale}. Brownout, which degrades
+optional content under overload, is a complementary
+approach~\cite{xu2020brownout}. Workload prediction with ARIMA models was used
+to provision ahead of demand~\cite{calheiros2015workload}, and Chameleon
+combines several forecasting methods in a hybrid proactive
+autoscaler~\cite{bauer2019chameleon}.
+
+\paragraph{Studies of the Kubernetes HPA.}
+Nguyen et al.\ study HPA behaviour experimentally and compare Kubernetes
+resource metrics with Prometheus custom metrics, offering lessons for tuning
+the HPA~\cite{nguyen2020horizontal}. Casalicchio compares relative and absolute
+CPU measures for autoscaling CPU-intensive containerised
+applications~\cite{casalicchio2019a}. Taherizadeh and Stankovski propose
+multi-level rules that combine infrastructure and application
+metrics~\cite{taherizadeh2019dynamic}. Pozdniakova et al.\ adjust the HPA's
+utilisation threshold from data so that a response-time SLO is met with little
+over-provisioning~\cite{pozdniakova2024slaadaptive}, and Augustyn et al.\ tune
+the maximum pod count of individual HPAs from a load profile, reducing the
+number of nodes in a medical-records service~\cite{augustyn2024tuning}.
+Serracanta et al.\ examine the stability of the HPA control
+loop~\cite{serracanta2025on}. For edge clusters, traffic-aware and node-based
+HPA variants distribute pods according to where requests
+arrive~\cite{phuc2022trafficaware,phuc2022nodebased}.
+
+\paragraph{Proactive and learning-based alternatives.}
+Several works replace the reactive HPA rule with a forecast or a learned
+policy: a bidirectional LSTM~\cite{dangquang2021deep}, neural-network
+forecasting~\cite{imdoukh2020machine}, machine-learning-based scaling for edge
+clusters~\cite{toka2021machine,toka2020adaptive}, reinforcement
+learning~\cite{abdelkhaleq2023intelligent} and adaptive microservice
+scaling~\cite{cruzcoulson2020adaptive}. LARE-HPA co-optimises latency and
+resource efficiency for horizontal pod autoscaling~\cite{kim2025larehpa}.
+Container placement and cost-efficient orchestration in Kubernetes are studied
+in~\cite{rossi2020geodistributed,zhong2020a}.
+
+\paragraph{Evaluation methodology.}
+Ilyushkin et al.\ point out that new autoscalers are seldom compared with the
+state of the art and evaluate seven policies across operating
+conditions~\cite{ilyushkin2018an}. PEAS evaluates autoscalers under workload
+uncertainty and shows that conclusions from single scenarios do not
+generalise~\cite{papadopoulos2016peas}. Papadopoulos et al.\ give
+methodological principles for reproducible performance evaluation in the
+cloud, such as repeated runs and reporting of
+variability~\cite{papadopoulos2021methodological}, and Leitner and Cito show
+how much performance varies in public clouds~\cite{leitner2016patterns}.
+Formal performance models have also been used to verify autoscaling
+policies~\cite{evangelidis2018performance}, and uncertainty in elasticity
+controllers is discussed in~\cite{jamshidi2016managing}. Tail latency, rather
+than the mean, often determines user experience at
+scale~\cite{dean2013the}, which is why we report the 95th percentile.
+
+\paragraph{Gap.}
+Most of the work above proposes a new autoscaler or tunes a single parameter
+for a specific service. Few studies compare the \emph{built-in} HPA settings,
+the CPU target together with the \texttt{behavior} policies, against each
+other and against fixed provisioning across several workload shapes, with
+repeated runs and openly available code and raw data. This study fills that
+gap for a controlled, CPU-bound web service.
+
+%% METHOD, RESULTS, DISCUSSION, CONCLUSION follow once the data are final.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}

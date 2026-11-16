@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-11-16T19:49:19+0500",
+  "host": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "machine": "AMD64",
+    "processor": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "logical_cpus": 8,
+    "python": "3.10.11"
+  },
+  "docker": {
+    "server_version": "28.5.1",
+    "operating_system": "Docker Desktop",
+    "kernel": "6.6.87.2-microsoft-standard-WSL2",
+    "cpus": 8,
+    "memory_bytes": 8242028544
+  },
+  "kind": "kind v0.33.0 go1.26.7 windows/amd64",
+  "kubectl_client": "v1.34.1",
+  "kubernetes_node": {
+    "kubelet": "v1.37.0",
+    "container_runtime": "containerd://2.3.4",
+    "os_image": "Debian GNU/Linux 13 (trixie)",
+    "allocatable_cpu": "8",
+    "allocatable_memory": "8048856Ki"
+  },
+  "metrics_server": "v0.7.2",
+  "locust": "locust 2.32.4 from /opt/venv/lib/python3.11/site-packages/locust (Python 3.11.10)",
+  "app_image_id": "sha256:29eb7c7d47b1944df7ce8ee276a94f839074d85ad748f0d234cc027bd89e4808",
+  "git_commit": "cac4d40b6fa060c07b991d2847193c82a8915dc5"
+}

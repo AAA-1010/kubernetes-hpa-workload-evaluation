@@ -1,0 +1,30 @@
+{
+  "run_id": "fixed__calibration__r1",
+  "config": "fixed",
+  "workload": "calibration",
+  "rep": 1,
+  "order": 1,
+  "initial_replicas": 1,
+  "hpa_manifest": null,
+  "host_start": 1794839989.3624015,
+  "host_end": 1794840473.247037,
+  "docker_minus_host_s": 0.012930631637573242,
+  "locust_exit_code": 0,
+  "collector_errors": 0,
+  "max_sampling_gap_s": 5.016000032424927,
+  "on_mains_power_at_end": true,
+  "control_plane_restarts_before": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  },
+  "control_plane_restarts_after": {
+    "etcd-hpa-exp-control-plane": 0,
+    "kube-apiserver-hpa-exp-control-plane": 0,
+    "kube-controller-manager-hpa-exp-control-plane": 0,
+    "kube-scheduler-hpa-exp-control-plane": 0,
+    "metrics-server": 0
+  }
+}

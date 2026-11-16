@@ -1,0 +1,45 @@
+bibtex_key,doi,crossref_type,year,venue,title,verified_on
+nguyen2020horizontal,10.3390/s20164621,journal-article,2020,Sensors,Horizontal Pod Autoscaling in Kubernetes for Elastic Container Orchestration,2026-11-16
+loridobotran2014a,10.1007/s10723-014-9314-7,journal-article,2014,Journal of Grid Computing,A Review of Auto-scaling Techniques for Elastic Applications in Cloud Environments,2026-11-16
+phuc2022trafficaware,10.1109/access.2022.3150867,journal-article,2022,IEEE Access,Traffic-Aware Horizontal Pod Autoscaler in Kubernetes-Based Edge Computing Infrastructure,2026-11-16
+abdelkhaleq2023intelligent,10.1007/s10586-023-03999-8,journal-article,2023,Cluster Computing,Intelligent microservices autoscaling module using reinforcement learning,2026-11-16
+burns2016borg,10.1145/2890784,journal-article,2016,Communications of the ACM,"Borg, Omega, and Kubernetes",2026-11-16
+qu2019autoscaling,10.1145/3148149,journal-article,2019,ACM Computing Surveys,Auto-Scaling Web Applications in Clouds,2026-11-16
+aldhuraibi2018elasticity,10.1109/tsc.2017.2711009,journal-article,2018,IEEE Transactions on Services Computing,Elasticity in Cloud Computing: State of the Art and Research Challenges,2026-11-16
+bauer2019chameleon,10.1109/tpds.2018.2870389,journal-article,2019,IEEE Transactions on Parallel and Distributed Systems,"Chameleon: A Hybrid, Proactive Auto-Scaling Mechanism on a Level-Playing Field",2026-11-16
+ilyushkin2018an,10.1145/3164537,journal-article,2018,ACM Transactions on Modeling and Performance Evaluation of Computing Systems,An Experimental Performance Evaluation of Autoscalers for Complex Workflows,2026-11-16
+casalicchio2019a,10.1007/s10586-018-02890-1,journal-article,2019,Cluster Computing,A study on performance measures for auto-scaling CPU-intensive containerized applications,2026-11-16
+rossi2020geodistributed,10.1016/j.comcom.2020.04.061,journal-article,2020,Computer Communications,Geo-distributed efficient deployment of containers with Kubernetes,2026-11-16
+toka2021machine,10.1109/tnsm.2021.3052837,journal-article,2021,IEEE Transactions on Network and Service Management,Machine Learning-Based Scaling Management for Kubernetes Edge Clusters,2026-11-16
+dangquang2021deep,10.3390/app11093835,journal-article,2021,Applied Sciences,Deep Learning-Based Autoscaling Using Bidirectional Long Short-Term Memory for Kubernetes,2026-11-16
+imdoukh2020machine,10.1007/s00521-019-04507-z,journal-article,2020,Neural Computing and Applications,Machine learning-based auto-scaling for containerized applications,2026-11-16
+pahl2019cloud,10.1109/tcc.2017.2702586,journal-article,2019,IEEE Transactions on Cloud Computing,Cloud Container Technologies: A State-of-the-Art Review,2026-11-16
+truyen2019a,10.3390/app9050931,journal-article,2019,Applied Sciences,A Comprehensive Feature Comparison Study of Open-Source Container Orchestration Frameworks,2026-11-16
+bernstein2014containers,10.1109/mcc.2014.51,journal-article,2014,IEEE Cloud Computing,Containers and Cloud: From LXC to Docker to Kubernetes,2026-11-16
+cruzcoulson2020adaptive,10.1109/jiot.2020.2964405,journal-article,2020,IEEE Internet of Things Journal,Adaptive Microservice Scaling for Elastic Applications,2026-11-16
+kephart2003the,10.1109/mc.2003.1160055,journal-article,2003,Computer,The vision of autonomic computing,2026-11-16
+salehie2009selfadaptive,10.1145/1516533.1516538,journal-article,2009,ACM Transactions on Autonomous and Adaptive Systems,Self-adaptive software,2026-11-16
+papadopoulos2016peas,10.1145/2930659,journal-article,2016,ACM Transactions on Modeling and Performance Evaluation of Computing Systems,PEAS,2026-11-16
+papadopoulos2021methodological,10.1109/tse.2019.2927908,journal-article,2021,IEEE Transactions on Software Engineering,Methodological Principles for Reproducible Performance Evaluation in Cloud Computing,2026-11-16
+leitner2016patterns,10.1145/2885497,journal-article,2016,ACM Transactions on Internet Technology,Patterns in the Chaos—A Study of Performance Variation and Predictability in Public IaaS Clouds,2026-11-16
+calheiros2015workload,10.1109/tcc.2014.2350475,journal-article,2015,IEEE Transactions on Cloud Computing,Workload Prediction Using ARIMA Model and Its Impact on Cloud Applications’ QoS,2026-11-16
+gandhi2012autoscale,10.1145/2382553.2382556,journal-article,2012,ACM Transactions on Computer Systems,AutoScale,2026-11-16
+urgaonkar2008agile,10.1145/1342171.1342172,journal-article,2008,ACM Transactions on Autonomous and Adaptive Systems,Agile dynamic provisioning of multi-tier Internet applications,2026-11-16
+dean2013the,10.1145/2408776.2408794,journal-article,2013,Communications of the ACM,The tail at scale,2026-11-16
+gari2021reinforcement,10.1016/j.engappai.2021.104288,journal-article,2021,Engineering Applications of Artificial Intelligence,Reinforcement learning-based application Autoscaling in the Cloud: A survey,2026-11-16
+chen2019a,10.1145/3190507,journal-article,2019,ACM Computing Surveys,A Survey and Taxonomy of Self-Aware and Self-Adaptive Cloud Autoscaling Systems,2026-11-16
+zhong2020a,10.1145/3378447,journal-article,2020,ACM Transactions on Internet Technology,A Cost-Efficient Container Orchestration Strategy in Kubernetes-Based Cloud Computing Infrastructures with Heterogeneous Resources,2026-11-16
+zhong2022machine,10.1145/3510415,journal-article,2022,ACM Computing Surveys,Machine Learning-based Orchestration of Containers: A Taxonomy and Future Directions,2026-11-16
+xu2020brownout,10.1145/3234151,journal-article,2020,ACM Computing Surveys,Brownout Approach for Adaptive Management of Resources and Applications in Cloud Computing Systems,2026-11-16
+evangelidis2018performance,10.1016/j.future.2017.12.047,journal-article,2018,Future Generation Computer Systems,Performance modelling and verification of cloud-based auto-scaling policies,2026-11-16
+dogani2023autoscaling,10.1016/j.comcom.2023.06.010,journal-article,2023,Computer Communications,Auto-scaling techniques in container-based cloud and edge/fog computing: Taxonomy and survey,2026-11-16
+taherizadeh2019dynamic,10.1093/comjnl/bxy043,journal-article,2019,The Computer Journal,Dynamic Multi-level Auto-scaling Rules for Containerized Applications,2026-11-16
+jamshidi2016managing,10.1109/mcc.2016.66,journal-article,2016,IEEE Cloud Computing,Managing Uncertainty in Autonomic Cloud Elasticity Controllers,2026-11-16
+kim2025larehpa,10.1007/978-981-96-0808-9_2,book-chapter,2025,Lecture Notes in Computer Science,LARE-HPA: Co-optimizing Latency and Resource Efficiency for Horizontal Pod Autoscaling in Kubernetes,2026-11-16
+toka2020adaptive,10.1109/ccgrid49817.2020.00-33,proceedings-article,2020,"2020 20th IEEE/ACM International Symposium on Cluster, Cloud and Internet Computing (CCGRID)",Adaptive AI-based auto-scaling for Kubernetes,2026-11-16
+pozdniakova2024slaadaptive,10.3390/electronics13071242,journal-article,2024,Electronics,SLA-Adaptive Threshold Adjustment for a Kubernetes Horizontal Pod Autoscaler,2026-11-16
+augustyn2024tuning,10.3390/app14020646,journal-article,2024,Applied Sciences,Tuning a Kubernetes Horizontal Pod Autoscaler for Meeting Performance and Load Demands in Cloud Deployments,2026-11-16
+serracanta2025on,10.1109/access.2025.3526751,journal-article,2025,IEEE Access,On the Stability of the Kubernetes Horizontal Autoscaler Control Loop,2026-11-16
+phuc2022nodebased,10.1109/access.2022.3232131,journal-article,2022,IEEE Access,Node-Based Horizontal Pod Autoscaler in KubeEdge-Based Edge Computing Infrastructure,2026-11-16
+carrion2023kubernetes,10.1145/3539606,journal-article,2023,ACM Computing Surveys,"Kubernetes Scheduling: Taxonomy, Ongoing Issues and Challenges",2026-11-16
+senjab2023a,10.1186/s13677-023-00471-1,journal-article,2023,Journal of Cloud Computing,A survey of Kubernetes scheduling algorithms,2026-11-16

@@ -1,0 +1,24 @@
+# Default HPA: CPU target of 80% (the value Kubernetes uses when no target is
+# given, e.g. `kubectl autoscale` without --cpu-percent) and no `behavior`
+# section, so the built-in defaults apply:
+#   scale-up:   no stabilization window; max(100% or 4 pods) per 15 s
+#   scale-down: 300 s stabilization window; up to 100% per 15 s
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web
+  namespace: hpa-exp
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80

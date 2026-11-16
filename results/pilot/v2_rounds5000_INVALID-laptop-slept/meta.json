@@ -1,0 +1,14 @@
+{
+  "run_id": "fixed__calibration__r1",
+  "config": "fixed",
+  "workload": "calibration",
+  "rep": 1,
+  "order": 1,
+  "initial_replicas": 1,
+  "hpa_manifest": null,
+  "host_start": 1794819972.235893,
+  "host_end": 1794833004.3034215,
+  "docker_minus_host_s": 0.2752211093902588,
+  "locust_exit_code": 0,
+  "collector_errors": 1
+}

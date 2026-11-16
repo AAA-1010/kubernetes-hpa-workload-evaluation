@@ -1,0 +1,5 @@
+# Host-side analysis and orchestration (the load generator runs in the
+# locustio/locust container; the web app has its own app/requirements.txt).
+numpy>=1.26,<3
+pandas>=2.2,<3
+matplotlib>=3.8,<4

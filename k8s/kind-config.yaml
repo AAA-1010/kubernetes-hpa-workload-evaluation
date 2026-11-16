@@ -1,0 +1,25 @@
+# Single-node local Kubernetes cluster for the experiments.
+# NodePort 30080 of the web service is published on the node container so the
+# load generator (running on the same Docker network) can reach it.
+#
+# etcd keeps its data on the node's tmpfs (/tmp). On the laptop used for the
+# study, disk latency during image loading made etcd slow enough for the
+# scheduler and controller manager to lose their leader leases and restart
+# (see docs/pilot.md). A controller-manager restart pauses the HPA, so the
+# in-memory etcd keeps the control plane responsive. Cluster state is
+# disposable: the cluster is always rebuilt by experiment/setup_cluster.py.
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: hpa-exp
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: ClusterConfiguration
+        etcd:
+          local:
+            dataDir: /tmp/etcd
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 30080
+        protocol: TCP

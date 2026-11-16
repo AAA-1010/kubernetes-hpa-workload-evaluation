@@ -1,0 +1,85 @@
+{
+  "_comment": "Single source of truth for the experiment design. Values marked CALIBRATE are fixed after the pilot run and documented in docs/pilot.md before the main experiments.",
+  "namespace": "hpa-exp",
+  "cluster_name": "hpa-exp",
+  "app_image": "hpa-web:1.0",
+  "kind_node_image": "kindest/node:v1.37.0@sha256:a1ed56cfb0e7b93589bdf97c8cd566405a265939e3620fc4f5de89adff580ae5",
+  "metrics_server_version": "v0.7.2",
+  "locust_image": "locustio/locust:2.32.4",
+  "locust_cpus": "1",
+  "target_host": "http://hpa-exp-control-plane:30080",
+  "duration_s": 600,
+  "sample_interval_s": 5,
+  "settle_s": 30,
+  "repetitions": 3,
+  "seed": 20261116,
+  "sla_ms": 250,
+  "users": {
+    "base": 20,
+    "peak": 120,
+    "steady": 70
+  },
+  "configs": {
+    "fixed": {
+      "hpa": null,
+      "initial_replicas": 4
+    },
+    "default": {
+      "hpa": "k8s/hpa/default.yaml",
+      "initial_replicas": 2
+    },
+    "responsive": {
+      "hpa": "k8s/hpa/responsive.yaml",
+      "initial_replicas": 2
+    },
+    "balanced": {
+      "hpa": "k8s/hpa/balanced.yaml",
+      "initial_replicas": 2
+    }
+  },
+  "workloads": {
+    "steady": {
+      "onsets_s": [
+        0
+      ]
+    },
+    "bursty": {
+      "onsets_s": [
+        120,
+        390
+      ],
+      "bursts_s": [
+        [
+          120,
+          210
+        ],
+        [
+          390,
+          480
+        ]
+      ]
+    },
+    "periodic": {
+      "onsets_s": [
+        0,
+        200,
+        400
+      ],
+      "period_s": 200
+    },
+    "calibration": {
+      "replicas": 1,
+      "step_s": 60,
+      "steps_users": [
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        35,
+        40
+      ]
+    }
+  }
+}
