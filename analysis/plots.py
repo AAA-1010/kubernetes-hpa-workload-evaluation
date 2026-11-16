@@ -70,7 +70,7 @@ def fig_workloads(plan: dict) -> None:
 
 
 def fig_timeseries(ts: pd.DataFrame, column: str, ylabel: str, name: str, log: bool = False) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.1), sharey=True)
+    fig, axes = plt.subplots(1, 3, figsize=(7.0, 1.9), sharey=True)
     mean = ts.groupby(["workload", "config", "t"])[column].mean().reset_index()
     for ax, w in zip(axes, WORKLOADS):
         for c in CONFIGS:
@@ -109,7 +109,7 @@ def fig_bars(summary: pd.DataFrame) -> None:
 
 
 def fig_tradeoff(runs: pd.DataFrame) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.1), sharey=False)
+    fig, axes = plt.subplots(1, 3, figsize=(7.0, 1.9), sharey=False)
     for ax, w in zip(axes, WORKLOADS):
         for c in CONFIGS:
             d = runs[(runs["workload"] == w) & (runs["config"] == c)]

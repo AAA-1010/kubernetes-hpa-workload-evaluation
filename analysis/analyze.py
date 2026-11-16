@@ -156,7 +156,7 @@ def write_tables(summary: pd.DataFrame) -> None:
     """One compact table: rows are workload x configuration, cells are mean +- std over runs."""
     TABLES.mkdir(parents=True, exist_ok=True)
     columns = [
-        ("throughput_rps", "Thr.\\ (req/s)", 1), ("lat_p50_ms", "p50 (ms)", 0),
+        ("lat_p50_ms", "p50 (ms)", 0),
         ("lat_p95_ms", "p95 (ms)", 0), ("sla_violation_pct", "SLA viol.\\ (\\%)", 1),
         ("failure_pct", "Fail (\\%)", 2), ("pods_ready_mean", "Avg pods", 1),
         ("pod_seconds", "Pod-s", 0), ("scaling_actions", "Actions", 1),

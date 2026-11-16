@@ -3,7 +3,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{newtxtext,newtxmath}
-\usepackage[margin=2.2cm]{geometry}
+\usepackage[margin=2.0cm]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{amsmath}
@@ -402,7 +402,7 @@ that mattered.
 \begin{table}[t]
 \centering
 \caption{Results per workload and configuration, mean $\pm$ standard deviation
-over three runs. Thr.: successful requests per second; p50/p95: latency
+over three runs. p50/p95: latency
 percentiles of successful requests; SLA viol.: requests that failed or took
 longer than 250\,ms; Pod-s: pod-seconds over the 600\,s run; Actions: changes of
 the desired replica count; Up delay: time from a load increase to the first
@@ -643,7 +643,7 @@ autoscalers. All scripts and raw data are public so that these results can be
 checked and extended.
 
 \renewcommand{\bibfont}{\small}
-\setlength{\bibsep}{2pt plus 1pt}
+\setlength{\bibsep}{0.5pt plus 0.5pt}
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 
