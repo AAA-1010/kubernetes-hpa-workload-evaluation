@@ -12,6 +12,8 @@
 \usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{10pt plus 2pt minus 2pt}
 
 \begin{document}
 
@@ -376,11 +378,23 @@ the three runs do not overlap, and give those ranges in square brackets.
 The SLA threshold and load levels were fixed from pilot runs before the main
 experiment, as planned in the proposal; all pilots and their raw data are
 documented in the repository. In the final pilot a single pod was exposed to
-offered loads rising from 5 to 40 requests per second in 60\,s steps. Up to
+offered loads rising from 5 to 40 requests per second in 60\,s steps
+(Figure~\ref{fig:calibration}). Up to
 15 requests per second the 95th-percentile latency stayed between 111 and
-123\,ms; it reached 219\,ms at 20 and 273\,ms at 25 requests per second, and
-the pod saturated at 33 to 38 requests per second with a p95 above 1.3\,s.
-We therefore set the SLA threshold to 250\,ms, about twice the unloaded p95.
+123\,ms; it reached 219\,ms at 20 and 273\,ms at 25 requests per second, was
+210\,ms at 30, and above that the pod could no longer keep up: it served 32.9
+and 38.3 requests per second at offered loads of 35 and 40, with a p95 above
+1.3\,s. We therefore set the SLA threshold to 250\,ms, about twice the
+unloaded p95.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{calibration}
+\caption{Final pilot, one pod: throughput and p95 latency (log scale) per
+60\,s load step; dotted line: the 250\,ms SLA threshold.}
+\label{fig:calibration}
+\end{figure}
+
 Earlier pilots were rejected because the request was too expensive, because
 the default probe timeout removed overloaded pods from service, or because the
 laptop lost mains power and went to sleep during the run; these experiences

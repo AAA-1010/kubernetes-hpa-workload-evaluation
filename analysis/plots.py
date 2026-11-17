@@ -128,29 +128,39 @@ def fig_tradeoff(runs: pd.DataFrame) -> None:
     save(fig, "tradeoff")
 
 
-def fig_calibration() -> None:
-    # Final pilot (docs/pilot.md, pilot v5)
+def fig_calibration(plan: dict) -> None:
+    # Final pilot (docs/pilot.md, pilot v5): one pod, offered load raised in 60 s steps.
+    # Sized for a single column of a two-column article.
     path = REPO / "results" / "pilot" / "v5_rounds10000" / "calibration_summary.csv"
     if not path.exists():
         return
     cal = pd.read_csv(path)
-    fig, axes = plt.subplots(1, 2, figsize=(5.0, 1.9))
-    axes[0].plot(cal["target_users"], cal["throughput_rps"], color=INK, marker="o", markersize=3)
+    fig, axes = plt.subplots(1, 2, figsize=(3.4, 1.4))
     axes[0].plot(cal["target_users"], cal["target_users"], color=MUTED, linestyle="--",
-                 linewidth=0.8)
-    axes[0].set_xlabel("Offered load (users ≈ req/s)")
+                 linewidth=0.8, label="Offered")
+    axes[0].plot(cal["target_users"], cal["throughput_rps"], color=INK, marker="o",
+                 markersize=2.5, label="Served")
+    axes[0].set_xlabel("Offered load (req/s)")
     axes[0].set_ylabel("Throughput (req/s)")
-    axes[1].plot(cal["target_users"], cal["p95_ms"], color=INK, marker="o", markersize=3)
-    axes[1].set_xlabel("Offered load (users ≈ req/s)")
+    axes[0].legend(frameon=False, loc="upper left", handlelength=1.8)
+    axes[1].plot(cal["target_users"], cal["p95_ms"], color=INK, marker="o", markersize=2.5)
+    axes[1].axhline(plan["sla_ms"], color=MUTED, linestyle=":", linewidth=0.9)
+    axes[1].text(5, plan["sla_ms"] * 1.08, f"SLA {plan['sla_ms']} ms", color=MUTED, fontsize=6)
+    axes[1].set_yscale("log")
+    axes[1].set_yticks([100, 200, 500, 1000, 2000], ["100", "200", "500", "1000", "2000"])
+    axes[1].yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
+    for ax in axes:
+        ax.set_xticks([10, 20, 30, 40])
+    axes[1].set_xlabel("Offered load (req/s)")
     axes[1].set_ylabel("p95 latency (ms)")
-    fig.tight_layout(w_pad=2.0)
+    fig.tight_layout(w_pad=1.0)
     save(fig, "calibration")
 
 
 def main() -> None:
     plan = load_plan()
     fig_workloads(plan)
-    fig_calibration()
+    fig_calibration(plan)
     if not (PROC / "run_metrics.csv").exists():
         sys.exit("Run analysis/analyze.py first.")
     runs = pd.read_csv(PROC / "run_metrics.csv")
