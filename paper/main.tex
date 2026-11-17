@@ -1,43 +1,42 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[conference,a4paper]{IEEEtran}
 
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{newtxtext,newtxmath}
-\usepackage[margin=2.0cm]{geometry}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{amsmath}
-\usepackage[hidelinks]{hyperref}
 \usepackage{url}
 \usepackage[numbers,sort&compress]{natbib}
-\usepackage{caption}
-\captionsetup{font=small,labelfont=bf}
-\usepackage{enumitem}
-\setlist{nosep,leftmargin=*}
+\usepackage[hidelinks]{hyperref}
 
 \graphicspath{{figures/}}
 
-\title{\textbf{Experimental Sensitivity Analysis of Kubernetes Horizontal Pod Autoscaler Configurations under Steady, Bursty, and Periodic Web Workloads}}
+\begin{document}
+
+\title{Experimental Sensitivity Analysis of Kubernetes Horizontal Pod Autoscaler Configurations under Steady, Bursty, and Periodic Web Workloads}
 
 \author{
-  Basim Kafeel\\
-  \small 22I-0775 --- \texttt{i220775@nu.edu.pk}\\
-  \small Primary Researcher
-  \and
-  Ali Aamir Ashraf\\
-  \small 22I-1199 --- \texttt{i221199@nu.edu.pk}\\
-  \small Co-Researcher
-  \\[1ex]
-  \small Department of Computer Science, FAST-NUCES Islamabad\\
-  \small BS Computer Science, Section CS-B, Group G01
+\IEEEauthorblockN{Basim Kafeel (22I-0775)}
+\IEEEauthorblockA{Primary Researcher\\
+Department of Computer Science\\
+FAST-NUCES, Islamabad, Pakistan\\
+BS CS, Section CS-B, Group G01\\
+i220775@nu.edu.pk}
+\and
+\IEEEauthorblockN{Ali Aamir Ashraf (22I-1199)}
+\IEEEauthorblockA{Co-Researcher\\
+Department of Computer Science\\
+FAST-NUCES, Islamabad, Pakistan\\
+BS CS, Section CS-B, Group G01\\
+i221199@nu.edu.pk}
 }
-\date{}
 
-\begin{document}
 \maketitle
 
 \begin{abstract}
-\noindent The Kubernetes Horizontal Pod Autoscaler (HPA) is the standard way to
+The Kubernetes Horizontal Pod Autoscaler (HPA) is the standard way to
 scale containerised web services, yet its CPU target and scaling behaviour are
 usually left at their defaults. This article measures how these settings affect
 latency, SLA compliance and provisioned capacity. A CPU-bound web service was
@@ -58,8 +57,10 @@ analysis scripts are available at
 \url{https://github.com/AAA-1010/kubernetes-hpa-workload-evaluation}.
 \end{abstract}
 
-\noindent\textbf{Keywords:} Kubernetes, Horizontal Pod Autoscaler, autoscaling,
-elasticity, performance evaluation, cloud computing.
+\begin{IEEEkeywords}
+Kubernetes, Horizontal Pod Autoscaler, autoscaling, elasticity, performance
+evaluation, cloud computing.
+\end{IEEEkeywords}
 
 \section{Introduction}
 
@@ -132,10 +133,11 @@ synchronisation period (15\,s by default) it reads the current metric for the
 target pods from the Metrics API, which the Metrics Server fills by scraping
 the kubelets, and computes
 \begin{equation}
-  \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times
-  \frac{\text{currentMetricValue}}{\text{targetMetricValue}} \right\rceil .
+  r_{\text{desired}} = \left\lceil r_{\text{current}} \cdot
+  \frac{m_{\text{current}}}{m_{\text{target}}} \right\rceil ,
   \label{eq:hpa}
 \end{equation}
+where $r$ is the replica count and $m$ the metric value.
 For CPU, the metric is average utilisation expressed as a percentage of each
 pod's CPU \emph{request}, so a pod that requests 250 millicores and uses
 200 millicores is at 80\%. Changes are skipped when the ratio is within a
@@ -162,7 +164,7 @@ loop formally~\cite{serracanta2025on}.
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{Autoscaling surveys.}
+\paragraph{Autoscaling surveys}
 Lorido-Botran et al.\ classify cloud autoscaling techniques into threshold
 rules, reinforcement learning, queueing theory, control theory and time-series
 analysis~\cite{loridobotran2014a}. Qu et al.\ survey autoscaling specifically
@@ -178,7 +180,7 @@ orchestration~\cite{zhong2022machine}. Container technologies and orchestrators
 themselves are reviewed in~\cite{pahl2019cloud,truyen2019a}, and Kubernetes
 scheduling in~\cite{carrion2023kubernetes,senjab2023a}.
 
-\paragraph{Classic dynamic provisioning.}
+\paragraph{Classic dynamic provisioning}
 Before containers, dynamic provisioning of multi-tier Internet applications
 combined queueing models with predictive and reactive
 control~\cite{urgaonkar2008agile}, and AutoScale showed that capacity can be
@@ -190,7 +192,7 @@ to provision ahead of demand~\cite{calheiros2015workload}, and Chameleon
 combines several forecasting methods in a hybrid proactive
 autoscaler~\cite{bauer2019chameleon}.
 
-\paragraph{Studies of the Kubernetes HPA.}
+\paragraph{Studies of the Kubernetes HPA}
 Nguyen et al.\ study HPA behaviour experimentally and compare Kubernetes
 resource metrics with Prometheus custom metrics, offering lessons for tuning
 the HPA~\cite{nguyen2020horizontal}. Casalicchio compares relative and absolute
@@ -207,7 +209,7 @@ loop~\cite{serracanta2025on}. For edge clusters, traffic-aware and node-based
 HPA variants distribute pods according to where requests
 arrive~\cite{phuc2022trafficaware,phuc2022nodebased}.
 
-\paragraph{Proactive and learning-based alternatives.}
+\paragraph{Proactive and learning-based alternatives}
 Several works replace the reactive HPA rule with a forecast or a learned
 policy: a bidirectional LSTM~\cite{dangquang2021deep}, neural-network
 forecasting~\cite{imdoukh2020machine}, machine-learning-based scaling for edge
@@ -218,7 +220,7 @@ resource efficiency for horizontal pod autoscaling~\cite{kim2025larehpa}.
 Container placement and cost-efficient orchestration in Kubernetes are studied
 in~\cite{rossi2020geodistributed,zhong2020a}.
 
-\paragraph{Evaluation methodology.}
+\paragraph{Evaluation methodology}
 Ilyushkin et al.\ point out that new autoscalers are seldom compared with the
 state of the art and evaluate seven policies across operating
 conditions~\cite{ilyushkin2018an}. PEAS evaluates autoscalers under workload
@@ -234,7 +236,7 @@ controllers is discussed in~\cite{jamshidi2016managing}. Tail latency, rather
 than the mean, often determines user experience at
 scale~\cite{dean2013the}, which is why we report the 95th percentile.
 
-\paragraph{Gap.}
+\paragraph{Gap}
 Most of the work above proposes a new autoscaler or tunes a single parameter
 for a specific service. Few studies compare the \emph{built-in} HPA settings,
 the CPU target together with the \texttt{behavior} policies, against each
@@ -296,18 +298,19 @@ workloads but not for their peaks.
 
 \begin{table}[t]
 \centering
-\caption{Scaling configurations. Scale-up and scale-down policies are per 15\,s
-unless stated otherwise; ``window'' is the stabilisation window.}
+\caption{Scaling configurations. Scale-up allows the larger of the two limits
+per 15\,s; ``window'' is the stabilisation window.}
 \label{tab:configs}
-\small
-\begin{tabular}{lcccc}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcc>{\raggedright\arraybackslash}p{2.0cm}>{\raggedright\arraybackslash}p{2.45cm}@{}}
 \toprule
-Configuration & CPU target & Pods (min/max) & Scale-up & Scale-down \\
+Config. & Target & Pods & Scale-up & Scale-down \\
 \midrule
-Fixed & -- & 4/4 & -- & -- \\
-Default & 80\% & 2/10 & max(100\%, 4 pods), no window & 100\%, 300\,s window \\
-Responsive & 50\% & 2/10 & max(200\%, 4 pods), no window & 50\%, 60\,s window \\
-Balanced & 65\% & 2/10 & 2 pods, 15\,s window & 1 pod per 30\,s, 120\,s window \\
+Fixed & -- & 4 & -- & -- \\
+Default & 80\% & 2--10 & 100\% or 4 pods, no window & 100\% per 15\,s, 300\,s window \\
+Responsive & 50\% & 2--10 & 200\% or 4 pods, no window & 50\% per 15\,s, 60\,s window \\
+Balanced & 65\% & 2--10 & 2 pods, 15\,s window & 1 pod per 30\,s, 120\,s window \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -399,7 +402,7 @@ five pods' worth of requested CPU, rather than the 0.9 cores planned. Second,
 memory stayed at 58\,MiB per pod in every run, so CPU was the only resource
 that mattered.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Results per workload and configuration, mean $\pm$ standard deviation
 over three runs. p50/p95: latency
@@ -409,23 +412,23 @@ the desired replica count; Up delay: time from a load increase to the first
 scale-up.}
 \label{tab:results}
 \resizebox{\textwidth}{!}{\input{tables/results.tex}}
-\end{table}
+\end{table*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{replicas}
+\includegraphics[width=\textwidth]{replicas}
 \caption{Ready pods over time, averaged over the three runs of each
 configuration (non-integer values mean that the runs differed).}
 \label{fig:replicas}
-\end{figure}
+\end{figure*}
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{p95_timeseries}
+\includegraphics[width=\textwidth]{p95_timeseries}
 \caption{95th-percentile latency in 10\,s windows, averaged over the three runs
 (logarithmic scale). The SLA threshold is 250\,ms.}
 \label{fig:p95}
-\end{figure}
+\end{figure*}
 
 \subsection{Steady workload}
 With four fixed pods, the 95th-percentile latency was 650\,ms
@@ -495,13 +498,13 @@ and scaled up again in each peak (12 scaling actions per run), which saved 6\%
 of pod-seconds relative to Default (5{,}035 versus 5{,}355) but left it at
 about 14\% violations per cycle and caused 0.08\% failed requests.
 
-\begin{figure}[t]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{tradeoff}
+\includegraphics[width=\textwidth]{tradeoff}
 \caption{SLA violation rate against provisioned capacity (pod-seconds) for
 each of the 36 runs. Points further down and to the left are better.}
 \label{fig:tradeoff}
-\end{figure}
+\end{figure*}
 
 \subsection{Scaling delay}
 The measured scale-up delays fell into narrow groups at about 13, 28, 43 and
@@ -531,7 +534,7 @@ overload: requests were still sent to pods that were being shut down.
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{Answer to the research question.}
+\paragraph{Answer to the research question}
 Against fixed provisioning sized for the average load, every HPA
 configuration lowered the SLA violation rate substantially: by 62--71\% under
 steady load, 60--71\% under periodic load and 24--39\% under bursts. It paid for
@@ -547,7 +550,7 @@ requests. The default 300\,s window acted like a cache of past peaks, which is
 helpful when peaks recur within five minutes, as in our periodic and bursty
 workloads, and wasteful when they do not.
 
-\paragraph{Reactive scaling and short bursts.}
+\paragraph{Reactive scaling and short bursts}
 No configuration handled the bursts well. Even Responsive, the fastest, needed
 about 52\,s to reach full capacity, more than half of a 90\,s burst, and the
 measured delays show that the 15\,s control loop, not pod start-up, set this
@@ -559,7 +562,7 @@ burst, or keeping capacity through gaps with a long scale-down window, is the
 practical alternative; the latter is what made Default's second burst cheaper in
 violations than its first.
 
-\paragraph{Scale-down needs graceful termination.}
+\paragraph{Scale-down needs graceful termination}
 The link between scale-down and failures is a practical finding: fast
 scale-down is safe only if the application drains connections before it stops.
 Our deployment, like many simple ones, had no pre-stop delay and a 5\,s grace
@@ -568,7 +571,7 @@ already shutting down. A pre-stop delay, so that the pod is removed from the
 Service before the server stops, is the usual remedy. We did not test it,
 and it is the first follow-up experiment we would run.
 
-\paragraph{Recommendations.}
+\paragraph{Recommendations}
 Under the conditions studied here: (i)~for steady traffic, use a moderate CPU
 target (around 65\%) with moderate scale-up limits, as in Balanced; (ii)~for
 traffic whose peaks recur within a few minutes, keep a long scale-down window,
@@ -585,7 +588,7 @@ scaling behaviour deserves the same attention as the target.
 \subsection{Threats to validity}
 \label{sec:threats}
 
-\paragraph{Internal validity.}
+\paragraph{Internal validity}
 The cluster, the load generator and the operating system shared one 4-core
 laptop. At 120 requests per second the latency grew even though the pods were
 far from their CPU limits, which points to contention outside the pods, in
@@ -604,7 +607,7 @@ underestimated, and more so for the configurations that were overloaded
 longest. Run order was randomised to spread slow drift of the laptop across
 configurations.
 
-\paragraph{Construct validity.}
+\paragraph{Construct validity}
 The SLA threshold (250\,ms) was fixed from the pilot before the main runs, but
 other thresholds would change the violation rates. Pod-seconds measure
 requested capacity, not money: in a real cloud the cost depends on how many
@@ -612,7 +615,7 @@ nodes a cluster autoscaler adds. The scale-up delay is defined only when the
 replica count could still rise, so for the periodic workload it describes the
 first cycle only.
 
-\paragraph{External validity.}
+\paragraph{External validity}
 The service is synthetic and purely CPU-bound, the cluster has a single node,
 and each run lasts ten minutes; services that are memory- or I/O-bound, take
 longer to start or run on many nodes may behave differently. The three HPA
@@ -642,8 +645,7 @@ the study on a multi-node cluster with node autoscaling and with proactive
 autoscalers. All scripts and raw data are public so that these results can be
 checked and extended.
 
-\renewcommand{\bibfont}{\small}
-\setlength{\bibsep}{0.5pt plus 0.5pt}
+\renewcommand{\bibfont}{\footnotesize}
 \bibliographystyle{unsrtnat}
 \bibliography{references}
 

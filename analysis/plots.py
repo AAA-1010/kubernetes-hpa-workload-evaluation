@@ -59,13 +59,18 @@ def load_plan() -> dict:
 
 
 def fig_workloads(plan: dict) -> None:
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 1.7), sharey=True)
+    # One panel, sized for a single column of a two-column article.
+    fig, ax = plt.subplots(figsize=(3.4, 1.6))
     t = np.arange(0, plan["duration_s"])
-    for ax, w in zip(axes, WORKLOADS):
-        ax.plot(t, [users_at(w, x, plan) for x in t], color=INK)
-        ax.set_title(w.capitalize())
-        ax.set_xlabel("Time (s)")
-    axes[0].set_ylabel("Users (≈ req/s)")
+    styles = {"steady": ("-", INK), "bursty": ("--", INK), "periodic": (":", MUTED)}
+    for w in WORKLOADS:
+        ls, col = styles[w]
+        ax.plot(t, [users_at(w, x, plan) for x in t], color=col, linestyle=ls,
+                label=w.capitalize())
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Users (≈ req/s)")
+    fig.tight_layout()
+    top_legend(fig, ax, ncol=3)
     save(fig, "workloads")
 
 
